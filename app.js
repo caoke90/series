@@ -1,9 +1,17 @@
 var layer1=cc.Layer.extend({
     init:function(){
         var sprite=new cc.Sprite
-        sprite.name=2
+        sprite.name=22
+        this.addChild(sprite,2)
+          var sprite=new cc.Sprite
+        sprite.name=32
         this.addChild(sprite,1)
-        this.sprite=sprite
+		   var sprite=new cc.Sprite
+        sprite.name=42
+        this.addChild(sprite,1)
+		   var sprite=new cc.Sprite
+     
+        this.addChild(sprite,1)
     },
     updateTransform:function(){
         this._super()
@@ -16,10 +24,24 @@ var Scene1=cc.Scene.extend({
         var layer=new layer1()
         layer.init()
         this.addChild(layer)
-    }
+    },
+	_search:function(){
+		var the=this
+		the.index=0
+		this._child(function(){
+			++the.index
+			if(this.name==22){
+				cc.log(this.name)
+				cc.log(the.index)
+				return false
+			}
+			return true
+		})
+	}
 })
 
 var scene=new Scene1()
-scene.updateTransform()
+
+scene._search()
 
 

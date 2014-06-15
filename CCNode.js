@@ -40,7 +40,21 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
             this._initNode();
         return true;
     },
-
+	_child:function(func){
+		var arr=this._children
+		if(arr.length){
+			for (i = 0; i < arr.length; i++) {
+             if(false==arr[i]._child(func)){
+				 return false
+			 }
+         }
+		}
+		 
+		 if(func.apply(this)==false){
+			 return false
+		 }
+		 return true
+	},
     _arrayMakeObjectsPerformSelector:function (array, callbackType) {
         if (!array || array.length === 0)
             return;
