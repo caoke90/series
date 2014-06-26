@@ -1,4 +1,6 @@
 var layer1=cc.Layer.extend({
+	context:$("#id"),
+	name:true,
     init:function(){
         var sprite=new cc.Sprite
         sprite.name=22
@@ -12,36 +14,21 @@ var layer1=cc.Layer.extend({
 		   var sprite=new cc.Sprite
      
         this.addChild(sprite,1)
-    },
-    updateTransform:function(){
-        this._super()
-        cc.log(this.sprite.name)
     }
 })
 var Scene1=cc.Scene.extend({
-    onEnter:function(){
+
+    init:function(){
         this._super()
         var layer=new layer1()
         layer.init()
         this.addChild(layer)
-    },
-	_search:function(){
-		var the=this
-		the.index=0
-		this._child(function(){
-			++the.index
-			if(this.name==22){
-				cc.log(this.name)
-				cc.log(the.index)
-				return false
-			}
-			return true
-		})
-	}
+    }
 })
 
 var scene=new Scene1()
-
-scene._search()
+scene.init()
+//显示页面
+scene.onEnter()
 
 

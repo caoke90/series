@@ -332,16 +332,21 @@ cc.Node.StateCallbackType = {onEnter:1, onExit:2, cleanup:3, updateTransform:5, 
 
 cc.Sprite=cc.Node.extend({
 })
+cc.Sprite.create = function () {
+    return new cc.Sprite();
+};
 cc.Layer=cc.Node.extend({
+	onEnter:function(){
+		this._super()
+		this._child(function(){
+			if(this.name){return false}
+			this.getParent().context.append(this.context)
+		})
+	}
 })
 cc.Scene=cc.Node.extend({
-    ctor:function(){
+    onEnter:function(){
+		this._arrayMakeObjectsPerformSelector(this._children, cc.Node.StateCallbackType.sortAllChildren);
         this._super()
-        this.onEnter()
-        this._arrayMakeObjectsPerformSelector(this._children, cc.Node.StateCallbackType.sortAllChildren);
-//        this.updateTransform()
     }
 })
-cc.Scene.create = function () {
-    return new cc.Scene();
-};
