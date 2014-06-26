@@ -2,7 +2,10 @@ var layer1=cc.Layer.extend({
 	context:$("#id"),
 	name:true,
     init:function(){
-        var sprite=new cc.Sprite
+      
+    },
+	initAnimate:function(){
+		var sprite=new cc.Sprite
         sprite.name=22
         this.addChild(sprite,2)
           var sprite=new cc.Sprite
@@ -14,7 +17,11 @@ var layer1=cc.Layer.extend({
 		   var sprite=new cc.Sprite
      
         this.addChild(sprite,1)
-    }
+	},
+	//点击交互事件
+    initMenu:function(){
+
+    },
 })
 var Scene1=cc.Scene.extend({
 

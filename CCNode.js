@@ -336,12 +336,17 @@ cc.Sprite.create = function () {
     return new cc.Sprite();
 };
 cc.Layer=cc.Node.extend({
+	name:"layer",
 	onEnter:function(){
 		this._super()
 		this._child(function(){
-			if(this.name){return false}
+			if(this.name=="layer"){return false}
 			this.getParent().context.append(this.context)
 		})
+	},
+	onExist:function(){
+		this._super()
+		this.context.remove()
 	}
 })
 cc.Scene=cc.Node.extend({
