@@ -1,6 +1,5 @@
 var layer1=cc.Layer.extend({
 	context:$("#id"),
-	name:true,
     init:function(){
       
     },
@@ -22,9 +21,20 @@ var layer1=cc.Layer.extend({
     initMenu:function(){
 
     },
+    onEnter:function(){
+        this._super()
+        var the
+        this._child(function(){
+            if(this===the){return false}
+            this.getParent().context.append(this.context)
+        })
+    },
+    onExist:function(){
+        this._super()
+        this.context.remove()
+    }
 })
 var Scene1=cc.Scene.extend({
-
     init:function(){
         this._super()
         var layer=new layer1()
