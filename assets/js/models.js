@@ -12,26 +12,21 @@ define(function(require, exports, module){
         onEnter:function(){
             this._super()
             var ctx=this.context
-            var ele=[]
-            ele.push($("header>div",ctx).appendTo(
+            $("header",ctx).children().appendTo(
                 $("header",this.getParent().context)
-            ))
-            ele.push($(".container>div",ctx).appendTo(
+            ).attr("_id",this._id)
+            $(".container",ctx).children().appendTo(
                 $(".container",this.getParent().context)
-            ))
-            ele.push($("footer>div",ctx).appendTo(
+            ).attr("_id",this._id)
+            $("footer",ctx).children().appendTo(
                 $("footer",this.getParent().context)
-            ))
-            
-            this.context=$(ele[1],this.getParent().context)
-            this.context.add(ele[1])
-            cc.log(this.context)
+            ).attr("_id",this._id)
+
+            this.context=$("[_id='"+this._id+"']",this.getParent().context)
         },
         onExit:function(){
             this._super()
-            $(this.ele).each(function(i, n){
-                $(this).remove();
-            })
+            this.context.remove()
         }
     })
     cc.Choice=cc.Topic.extend({
@@ -52,6 +47,7 @@ define(function(require, exports, module){
             this.data=data||this.data
             //解析数据 初始化题目
             this.context=$(ejs.render(tpl||this.tpl,this.data))
+
             this.initAnimate()
             //添加按钮
             this.initMenu()
@@ -65,17 +61,15 @@ define(function(require, exports, module){
             var prev=null
             var the=this
             $(".module li",ctx).each(function(i){
-                $(this).click(function(){
+                $(this).on("click",function(){
                     prev&&prev.removeClass("on")
                     prev=$(this).addClass("on")
                     the.state.select=i
-                    the.showAnswer()
                 })
             })
 //            $(".module li",ctx).eq(1).click()
         },
         showAnswer:function(){
-
 //            this.state.select
             var ctx=this.context
             $(".answer",ctx).show()
