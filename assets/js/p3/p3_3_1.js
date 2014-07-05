@@ -72,12 +72,6 @@ define(function(require, exports, module){
 
 //            this.initAudio()
         },
-        initContext:function(data,tpl){
-            this.path = require('queryString').strings(kooappdata).path||"111/222"
-            //获取模板
-            var tpl=require("./p3_3_1.tpl")
-
-        },
         //点击交互事件
         initMenu:function(){
             var the=this
@@ -139,12 +133,37 @@ define(function(require, exports, module){
                 oVideo.pause()
             })
         },
-        test:function(){
+        afterHtml:function(){
+            var ctx=this.context
+            $(".container",ctx).css({
+                "margin-top":$("header",ctx).height(),
+                "margin-bottom":$("footer",ctx).height(),
+                "height":$(ctx).height()-$("header",ctx).height()-$("footer",ctx).height()
+            })
+            //在网页端
+            if (!navigator.userAgent.match(/mobile/i)) {
+                this.getParent().context.css({
+                    "overflow":"scroll"
+                })
+                $(".container",ctx).css({
+                    "margin-bottom":$("footer",ctx).height()+100
+                })
+            }
+        },
+        onEnter:function(){
             this._super()
+            this.getParent().context.append(this.context)
+            this.afterHtml()
+        },
+        //结束
+        onExit:function(){
+            this._super()
+            this.context.remove()
         }
     })
     //每个scene对应一个页面
     var Scene1=(require("./baseLayer").Scene||cc.Scene).extend({
+		context:$("body"),
         ctor:function(){
             this._super()
             var layer=new Layer1()
