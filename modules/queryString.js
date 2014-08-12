@@ -18,4 +18,10 @@ define(function(require, exports, module) {
     exports.string = function(key) {
         return (document.location.search.match(new RegExp("(?:^\\?|&)"+key+"=(.*?)(?=&|$)"))||['',null])[1];
     };
+    exports.path = function(str) {
+        var str = str || document.location.href;
+        var path=str.replace(/\/[^\/]*$/i,"/")
+
+        return path;
+    };
 });

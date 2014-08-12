@@ -1,39 +1,5 @@
-/****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
-
- http://www.cocos2d-x.org
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ****************************************************************************/
-/* Managed JavaScript Inheritance
- * Based on John Resig's Simple JavaScript Inheritance http://ejohn.org/blog/simple-javascript-inheritance/
- * MIT Licensed.
- */
-
-/**
- * @namespace
- */
 var cc = cc || {};
 
-//
 function ClassManager(){
     //tells own name
     return arguments.callee.name || (arguments.callee.toString()).match(/^function ([^(]+)/)[1];
@@ -213,6 +179,7 @@ cc.NODE_TAG_INVALID = -1;
 cc.s_globalOrderOfArrival = 1;
 
 cc.Node = cc.Class.extend(/** @lends cc.Node# */{
+    _id:0,
     _zOrder:0,
     // children (lazy allocs),
     _children:null,
@@ -221,6 +188,7 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     _orderOfArrival:0,
     _initializedNode:false,
     _initNode:function () {
+        this._id=ClassManager.getNewID()
         this._children = [];
         this._initializedNode = true;
     },
@@ -237,7 +205,7 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     _child:function(func){
         var arr=this._children
         if(arr.length){
-            for (i = 0; i < arr.length; i++) {
+            for (var i = 0; i < arr.length; i++) {
                 if(false==arr[i]._child(func)){
                     return false
                 }
@@ -324,7 +292,7 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     },
 
     getChildren:function () {
-        return this._children;
+        return [].concat(this._children);
     },
 
     isRunning:function () {
@@ -529,84 +497,3 @@ cc.Node.create = function () {
 };
 
 cc.Node.StateCallbackType = {onEnter:1, onExit:2, cleanup:3, updateTransform:5,  sortAllChildren:7};
-
-cc.Sprite=cc.Node.extend({
-})
-cc.Sprite.create = function () {
-    return new cc.Sprite();
-};
-cc.Layer=cc.Node.extend({
-
-})
-cc.Scene=cc.Node.extend({
-})
-cc.Scene.create = function () {
-    return new cc.Scene();
-};
-
-cc.Middle=function(){
-    var next=function(func1,func2){
-        return function(){
-            var arg=Array.prototype.slice.call(arguments)
-            var arr=[].concat(arg)
-            arg.push(function(){
-                func2.apply(this,arr)
-            })
-            return func1.apply(this,arg);
-        }
-    }
-    var arg=Array.prototype.slice.call(arguments)
-    var func=arg[arg.length-1]
-    for(var i=arg.length-2;i>=0;i--){
-        func=next(arg[i],func)
-    }
-    return func
-}
-cc.Director={
-    _runningScene:null,
-    replaceScene:function(scene){
-        if(this._runningScene){
-            this._runningScene.onExit()
-        }
-        this._runningScene=scene
-        this._runningScene.onEnter()
-
-    }
-}
-cc.controlPage=cc.Class.extend({
-    pageArr:[],
-    sceneArr:[],
-    index:0,
-    next:function(refresh){
-        this.index++;
-        this.index = this.index % this.pageArr.length;
-
-        if(refresh||!this.sceneArr[this.index]){
-            this.sceneArr[this.index]=new this.pageArr[this.index]
-        }
-        cc.Director.replaceScene(this.sceneArr[this.index])
-    },
-    prev:function(refresh){
-        this.index--;
-        if (this.index < 0)
-            this.index += this.pageArr.length;
-
-        if(refresh||!this.sceneArr[this.index]){
-            this.sceneArr[this.index]=new this.pageArr[this.index]
-        }
-        cc.Director.replaceScene(this.sceneArr[this.index])
-    },
-    restart:function(refresh){
-        this.index=0
-        if(refresh||!this.sceneArr[this.index]){
-            this.sceneArr[this.index]=new this.pageArr[this.index]
-        }
-        cc.Director.replaceScene(this.sceneArr[this.index])
-    },
-    replay:function(refresh){
-        if(refresh||!this.sceneArr[this.index]){
-            this.sceneArr[this.index]=new this.pageArr[this.index]
-        }
-        cc.Director.replaceScene(this.sceneArr[this.index])
-    }
-})
