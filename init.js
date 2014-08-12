@@ -17,7 +17,7 @@ androiddata.tabHandle = androiddata.tabHandle || function(a){console && console.
     TSG.dataPath=TSG.appPath+'/kp/'
 seajs.config({
     debug: 0,
-    preload: ["cc","zepto.min.js","seajs-text.js","ejs.min.js"],
+    preload: ["cc.js","cc.extend.js","zepto.min.js","seajs-text.js","ejs.min.js"],
     // 文件编码
     charset: 'utf-8',
 
