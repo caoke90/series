@@ -108,7 +108,6 @@ cc.NODE_TAG_INVALID = -1;
 cc.s_globalOrderOfArrival = 1;
 
 cc.Node = cc.Class.extend(/** @lends cc.Node# */{
-    _id:0,
     _zOrder:0,
     // children (lazy allocs),
     _children:null,
@@ -117,7 +116,6 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     _orderOfArrival:0,
     _initializedNode:false,
     _initNode:function () {
-        this._id=ClassManager.getNewID()
         this._children = [];
         this._initializedNode = true;
     },
