@@ -38,7 +38,7 @@ seajs.config({
     ]
 });
 
-seajs.use(seajs.data.base+'../assets/js/p3/MyScene',function(exports){
+seajs.use(seajs.data.base+'../assets/js/ypkt2/MyScene',function(exports){
     $(function(){
         var Scene=exports.Scene
         var scene=new Scene
