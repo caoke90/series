@@ -1,17 +1,61 @@
-var cc = cc = cc || {};
+var cc = cc || {};
 
 function ClassManager(){
     //tells own name
     return arguments.callee.name || (arguments.callee.toString()).match(/^function ([^(]+)/)[1];
 }
 ClassManager.id=(0|(Math.random()*998));
+ClassManager.instanceId=(0|(Math.random()*998));
+ClassManager.compileSuper=function(func, name, id){
+    //make the func to a string
+    var str = func.toString();
+    //find parameters
+    var pstart = str.indexOf('(');
+    var pend = str.indexOf(')');
+    var params = str.substring(pstart+1, pend);
+    params = params.trim();
 
+    //find function body
+    var bstart = str.indexOf('{');
+    var bend = str.lastIndexOf('}');
+    var str = str.substring(bstart+1, bend);
+
+    //now we have the content of the function, replace this._super
+    //find this._super
+    while(str.indexOf('this._super')!= -1)
+    {
+        var sp = str.indexOf('this._super');
+        //find the first '(' from this._super)
+        var bp = str.indexOf('(', sp);
+
+        //find if we are passing params to super
+        var bbp = str.indexOf(')', bp);
+        var superParams = str.substring(bp+1, bbp);
+        superParams = superParams.trim();
+        var coma = superParams? ',':'';
+
+        //find name of ClassManager
+        var Cstr = arguments.callee.ClassManager();
+
+        //replace this._super
+        str = str.substring(0, sp)+  Cstr+'['+id+'].'+name+'.call(this'+coma+str.substring(bp+1);
+    }
+    return Function(params, str);
+};
+ClassManager.compileSuper.ClassManager = ClassManager;
 ClassManager.getNewID=function(){
     return this.id++;
+};
+ClassManager.getNewInstanceId=function(){
+    return this.instanceId++;
 };
 
 (function () {
     var initializing = false, fnTest = /\b_super\b/;
+    var releaseMode = (document['ccConfig'] && document['ccConfig']['CLASS_RELEASE_MODE']) ? document['ccConfig']['CLASS_RELEASE_MODE'] : null;
+    if(releaseMode) {
+        console.log("release Mode");
+    }
 
     /**
      * The base Class implementation (does nothing)
@@ -30,22 +74,22 @@ ClassManager.getNewID=function(){
 
         // Instantiate a base Class (but only create the instance,
         // don't run the init constructor)
-        initializing = true;
-        var prototype = new this();
-        initializing = false;
+        var prototype = Object.create(_super);
 
-        // The dummy Class constructor
-        function Class() {
-            // All construction is actually done in the init method
-            if (!initializing && this.ctor)
-                this.ctor.apply(this, arguments);
-        }
-        Class.id = ClassManager.getNewID();
-        ClassManager[Class.id] = _super;
-        // Copy the properties over onto the new prototype
+        var classId = ClassManager.getNewID();
+        ClassManager[classId] = _super;
+        // Copy the properties over onto the new prototype. We make function
+        // properties non-eumerable as this makes typeof === 'function' check
+        // unneccessary in the for...in loop used 1) for generating Class()
+        // 2) for cc.clone and perhaps more. It is also required to make
+        // these function properties cacheable in Carakan.
+        var desc = { writable: true, enumerable: false, configurable: true };
         for (var name in prop) {
-            if(typeof prop[name] == "function" && typeof _super[name] == "function" && fnTest.test(prop[name])){
-                prototype[name] = (function (name, fn) {
+            if(releaseMode && typeof prop[name] == "function" && typeof _super[name] == "function" && fnTest.test(prop[name])) {
+                desc.value = ClassManager.compileSuper(prop[name], name, classId);
+                Object.defineProperty(prototype, name, desc);
+            } else if(typeof prop[name] == "function" && typeof _super[name] == "function" && fnTest.test(prop[name])){
+                desc.value = (function (name, fn) {
                     return function () {
                         var tmp = this._super;
 
@@ -61,18 +105,36 @@ ClassManager.getNewID=function(){
                         return ret;
                     };
                 })(name, prop[name]);
-            }
-            else{
+                Object.defineProperty(prototype, name, desc);
+            } else if(typeof prop[name] == "function") {
+                desc.value = prop[name];
+                Object.defineProperty(prototype, name, desc);
+            } else{
                 prototype[name] = prop[name];
             }
         }
-        prototype.__pid = Class.id;
+        prototype.__instanceId = null;
+
+        // The dummy Class constructor
+        function Class() {
+            this.__instanceId = ClassManager.getNewInstanceId();
+            // All construction is actually done in the init method
+            if (this.ctor)
+                this.ctor.apply(this, arguments);
+        }
+
+        Class.id = classId;
+        // desc = { writable: true, enumerable: false, configurable: true,
+        //          value: XXX }; Again, we make this non-enumerable.
+        desc.value = classId;
+        Object.defineProperty(prototype, '__pid', desc);
 
         // Populate our constructed prototype object
         Class.prototype = prototype;
 
         // Enforce the constructor to be what we expect
-        Class.prototype.constructor = Class;
+        desc.value = Class;
+        Object.defineProperty(Class.prototype, 'constructor', desc);
 
         // And make this Class extendable
         Class.extend = arguments.callee;
@@ -85,6 +147,15 @@ ClassManager.getNewID=function(){
         };
         return Class;
     };
+
+    Function.prototype.bind = Function.prototype.bind || function (bind) {
+        var self = this;
+        return function () {
+            var args = Array.prototype.slice.call(arguments);
+            return self.apply(bind || null, args);
+        };
+    };
+
 })();
 
 //my only
@@ -108,6 +179,7 @@ cc.NODE_TAG_INVALID = -1;
 cc.s_globalOrderOfArrival = 1;
 
 cc.Node = cc.Class.extend(/** @lends cc.Node# */{
+    _id:0,
     _zOrder:0,
     // children (lazy allocs),
     _children:null,
@@ -116,6 +188,7 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     _orderOfArrival:0,
     _initializedNode:false,
     _initNode:function () {
+        this._id=ClassManager.getNewID()
         this._children = [];
         this._initializedNode = true;
     },
@@ -424,3 +497,85 @@ cc.Node.create = function () {
 };
 
 cc.Node.StateCallbackType = {onEnter:1, onExit:2, cleanup:3, updateTransform:5,  sortAllChildren:7};
+
+cc.Middle=function(){
+    var next=function(func1,func2){
+        return function(){
+            var arg=Array.prototype.slice.call(arguments)
+            var arr=[].concat(arg)
+            arg.push(function(){
+                func2.apply(this,arr)
+            })
+            return func1.apply(this,arg);
+        }
+    }
+    var arg=Array.prototype.slice.call(arguments)
+    var func=arg[arg.length-1]
+    for(var i=arg.length-2;i>=0;i--){
+        func=next(arg[i],func)
+    }
+    return func
+}
+
+cc.Sprite=cc.Node.extend({
+})
+cc.Layer=cc.Node.extend({
+})
+cc.Scene=cc.Node.extend({
+})
+//context 包含html文本和事件
+cc.Div=cc.Node.extend({
+    onEnter:function(){
+        this._super()
+        var the=this
+        $("[emit]",the.context).each(function(){
+            $(this).attr("emit_"+the._id,$(this).attr("emit"))
+            $(this).removeAttr("emit")
+        })
+
+        if(the.getParent()&&the.getParent().context){
+            $("[recive]",the.getParent().context).each(function(){
+                $(this).attr("recive_"+the.getParent()._id,$(this).attr("recive"))
+                $(this).removeAttr("recive")
+            })
+            $("[emit_"+the._id+"]",the.context).each(function(){
+                $("[recive_"+the.getParent()._id+"="+$(this).attr("emit_"+the._id)+"]",the.getParent().context).append($(this))
+            })
+            the.context= $("[emit_"+the._id+"]",the.getParent().context)
+        }else{
+            the.context=the.context.children()
+        }
+
+    },
+    //结束
+    onExit:function(){
+        this._super()
+        this.context.remove()
+    }
+})
+//demo
+var str1="<div id='hello'>hello world</div>"
+var Demo=cc.Div.extend({
+    init:function(tpl){
+        this._super();
+
+        this.context=$("<div>"+tpl+"</div>")
+        cc.log(this.context)
+
+        var the=this
+        $("#hello",the.context).on("click",function(){
+            alert(21)
+            $(this).text("first come on the world")
+        })
+    }
+})
+//hello world
+var hello=new Demo()
+hello.init(str1)
+hello.onEnter()
+
+$("body").append(hello.context)
+
+
+
+
