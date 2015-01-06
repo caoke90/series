@@ -542,8 +542,6 @@ cc.Div=cc.Node.extend({
                 $("[recive_"+the.getParent()._id+"="+$(this).attr("emit_"+the._id)+"]",the.getParent().context).append($(this))
             })
             the.context= $("[emit_"+the._id+"]",the.getParent().context)
-        }else{
-            the.context=the.context.children()
         }
 
     },
@@ -558,7 +556,7 @@ var str1="<div id='hello'>hello world</div>"
 var Demo=cc.Div.extend({
     init:function(tpl){
         this._super();
-
+        //转化成数组
         this.context=$("<div>"+tpl+"</div>")
         cc.log(this.context)
 
@@ -567,6 +565,10 @@ var Demo=cc.Div.extend({
             alert(21)
             $(this).text("first come on the world")
         })
+    },
+    onEnter:function(){
+        this._super();
+        $("body").append(this.context.children())
     }
 })
 //hello world
@@ -574,7 +576,6 @@ var hello=new Demo()
 hello.init(str1)
 hello.onEnter()
 
-$("body").append(hello.context)
 
 
 
