@@ -52,7 +52,7 @@ ClassManager.getNewInstanceId=function(){
 
 (function () {
     var initializing = false, fnTest = /\b_super\b/;
-    var releaseMode = (document['ccConfig'] && document['ccConfig']['CLASS_RELEASE_MODE']) ? document['ccConfig']['CLASS_RELEASE_MODE'] : null;
+    var releaseMode =  null;
     if(releaseMode) {
         console.log("release Mode");
     }
@@ -498,85 +498,47 @@ cc.Node.create = function () {
 
 cc.Node.StateCallbackType = {onEnter:1, onExit:2, cleanup:3, updateTransform:5,  sortAllChildren:7};
 
-cc.Middle=function(){
-    var next=function(func1,func2){
-        return function(){
-            var arg=Array.prototype.slice.call(arguments)
-            var arr=[].concat(arg)
-            arg.push(function(){
-                func2.apply(this,arr)
-            })
-            return func1.apply(this,arg);
-        }
-    }
-    var arg=Array.prototype.slice.call(arguments)
-    var func=arg[arg.length-1]
-    for(var i=arg.length-2;i>=0;i--){
-        func=next(arg[i],func)
-    }
-    return func
-}
-
-cc.Sprite=cc.Node.extend({
-})
-cc.Layer=cc.Node.extend({
-})
-cc.Scene=cc.Node.extend({
-})
 //context 包含html文本和事件
+//author caoke https://github.com/caoke90/cc
 cc.Div=cc.Node.extend({
+    context:"<div></div>",
+    //渲染开始
     onEnter:function(){
-        this._super()
         var the=this
         $("[emit]",the.context).each(function(){
             $(this).attr("emit_"+the._id,$(this).attr("emit"))
             $(this).removeAttr("emit")
         })
-
-        if(the.getParent()&&the.getParent().context){
-            $("[recive]",the.getParent().context).each(function(){
-                $(this).attr("recive_"+the.getParent()._id,$(this).attr("recive"))
-                $(this).removeAttr("recive")
-            })
-            $("[emit_"+the._id+"]",the.context).each(function(){
-                $("[recive_"+the.getParent()._id+"="+$(this).attr("emit_"+the._id)+"]",the.getParent().context).append($(this))
-            })
-            the.context= $("[emit_"+the._id+"]",the.getParent().context)
+        $("[recive]",the.context).each(function(){
+            $(this).attr("recive_"+the._id,$(this).attr("recive"))
+            $(this).removeAttr("recive")
+        })
+        this._super()
+        if(the.body){
+            $(the.body).append($(the.context).children())
+            the.context= $("[emit_"+the._id+"]",$(the.body)).parent()
+        }else{
+            if(the.getParent()&&the.getParent().context){
+                $("[emit_"+the._id+"]",the.context).each(function(){
+                    $("[recive_"+the.getParent()._id+"="+$(this).attr("emit_"+the._id)+"]",the.getParent().context).append($(this))
+                })
+                the.context= $("[emit_"+the._id+"]",the.getParent().context)
+            }
         }
 
     },
     //结束
     onExit:function(){
         this._super()
-        this.context.remove()
-    }
-})
-//demo
-var str1="<div id='hello'>hello world</div>"
-var Demo=cc.Div.extend({
-    init:function(tpl){
-        this._super();
-        //转化成数组
-        this.context=$("<div>"+tpl+"</div>")
-        cc.log(this.context)
-
-        var the=this
-        $("#hello",the.context).on("click",function(){
-            alert(21)
-            $(this).text("first come on the world")
-        })
+        $("[emit_"+this._id+"]",this.context.parent()).remove()
     },
-    onEnter:function(){
-        this._super();
-        $("body").append(this.context.children())
+    //重启
+    restart:function(){
+        this.onExit()
+        this.init()
+        this.onEnter()
     }
 })
-//hello world
-var hello=new Demo()
-hello.init(str1)
-hello.onEnter()
-
-
-
-
-
+//导演类
+cc.Director=cc.Node.create()
+cc.Director.onEnter()

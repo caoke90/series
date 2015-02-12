@@ -179,7 +179,7 @@ define(function(require, exports, module){
         },
         onEnter:function(){
             this._super()
-            this.context.appendTo($("body"))
+
             this.initPage()
             this.afterHtml()
         },

@@ -2,13 +2,31 @@
 <html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>趣味听听－听课页面</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width,user-scalable=no" />
+    <title></title>
+    <!-- 界面css  -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/flat-ui.css" rel="stylesheet">
+
+    <link href="assets/css/main.css" rel="stylesheet">
+    <!-- 界面js  -->
+    <script src="modules/jquery.min.js"></script>
+    <script src="modules/sea.js"></script>
+    <script src="init.js"></script>
 
 </head>
 <body>
-
+<script>
+    seajs.use("/assets/index/index.js",function(back){
+        var scene=new back()
+        scene.body="body"
+        scene.init()
+        cc.Director.addChild(scene)
+    })
+</script>
 </body>
-<script src="modules/sea.js"></script>
-<script src="init.js"></script>
+
 </html>
