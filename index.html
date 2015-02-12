@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -20,7 +20,8 @@
 </head>
 <body>
 <script>
-    seajs.use("/assets/index/index.js",function(back){
+console.log(seajs)
+    seajs.use(seajs.data.base+"../assets/index/index.js",function(back){
         var scene=new back()
         scene.body="body"
         scene.init()
