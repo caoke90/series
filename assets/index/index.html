@@ -1,0 +1,15 @@
+<div emit="body">
+    <%for(var i=0;i<7;i++){%>
+    <div id="tpl<%=i%>" class="col-xs-4">
+        <script>
+            seajs.use("/assets/"+'<%=getQueryString("file")||"bindlogin/bindlogin1.js"%>',function(back){
+                var scene=new back()
+                cc.log(scene._id)
+                scene.body="#tpl<%=i%>"
+                scene.init()
+                cc.Director.addChild(scene)
+            })
+        </script>
+    </div>
+    <%}%>
+</div>
